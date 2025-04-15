@@ -1,0 +1,27 @@
+[package]
+name = "shellyctl"
+version = "0.0.1"
+edition = "2021"
+license = "Unlicense"
+repository = "https://github.com/dmarion/shellyctl"
+authors = ["dmarion"]
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1.35", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+mdns-sd = "0.10"
+prettytable = "0.10"
+colored = "2"
+crossterm = "0.27"
+
+[package.metadata.deb]
+maintainer = "Damjan Marion <damjan.marion@gmail.com>"
+extended-description = """\
+A simple command to control shelly v2 devices"""
+depends = "$auto"
+section = "utility"
+priority = "optional"
