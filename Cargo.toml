@@ -1,6 +1,6 @@
 [package]
 name = "shellyctl"
-version = "0.0.1"
+version = "0.0.2"
 edition = "2021"
 license = "Unlicense"
 repository = "https://github.com/dmarion/shellyctl"

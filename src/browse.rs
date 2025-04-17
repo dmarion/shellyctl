@@ -30,6 +30,7 @@ pub struct BrowseArgs {
 struct ShellyDevice {
     mac: String,
     ip: String,
+    gen: u32,
     device_type: String,
     name: String,
     ver: String,
@@ -93,6 +94,7 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                 }
                             }
                             let mac = json["mac"].as_str().unwrap_or("-").to_string();
+                            let gen = json["gen"].as_u64().unwrap_or(0) as u32;
                             let get = |key: &str| {
                                 json.get(key)
                                     .and_then(|v| v.as_str())
@@ -104,6 +106,7 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                 mac.clone(),
                                 ShellyDevice {
                                     mac,
+                                    gen,
                                     ip: ip_str,
                                     device_type,
                                     name: get("name"),
@@ -140,6 +143,7 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                 Cell::new("IP Addr").style_spec("Fc"),
                                 Cell::new("Type").style_spec("Fc"),
                                 Cell::new("Model").style_spec("Fc"),
+                                Cell::new("Gen").style_spec("Fc"),
                                 Cell::new("App").style_spec("Fc"),
                                 Cell::new("Profile").style_spec("Fc"),
                                 Cell::new("Firmware").style_spec("Fc"),
@@ -152,10 +156,11 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                     Cell::new(&device.ip).style_spec("Fw"),
                                     Cell::new(&device.device_type).style_spec("Fy"),
                                     Cell::new(&device.model).style_spec("Fw"),
-                                    Cell::new(&device.app).style_spec("Fy"),
-                                    Cell::new(&device.profile).style_spec("Fw"),
-                                    Cell::new(&device.ver).style_spec("Fy"),
-                                    Cell::new(&device.name).style_spec("Fw"),
+                                    Cell::new(&device.gen.to_string()).style_spec("Fy"),
+                                    Cell::new(&device.app).style_spec("Fw"),
+                                    Cell::new(&device.profile).style_spec("Fy"),
+                                    Cell::new(&device.ver).style_spec("Fw"),
+                                    Cell::new(&device.name).style_spec("Fy"),
                                 ]));
                             }
 
