@@ -1,19 +1,8 @@
+use crate::cli::ConfigSetArgs;
 use crate::log_verbose;
 use anyhow::{bail, Result};
-use clap::Args;
 use reqwest::Client;
 use serde_json::{json, to_string_pretty, Map, Value};
-
-#[derive(Args)]
-pub struct ConfigSetArgs {
-    /// Device IP or hostname
-    #[arg(short, long)]
-    pub device: String,
-
-    /// Key-value pairs to modify, e.g. Sys.device.name=klima
-    #[arg(required = true)]
-    pub pairs: Vec<String>,
-}
 
 fn parse_value(val: &str) -> Value {
     if val.eq_ignore_ascii_case("true") {

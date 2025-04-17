@@ -1,10 +1,10 @@
+use crate::cli::BrowseArgs;
 use std::collections::{BTreeMap, HashSet};
 use std::io::{stdout, Write};
 use std::net::IpAddr;
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
-use clap::Args;
 use mdns_sd::{ServiceDaemon, ServiceEvent};
 use reqwest::Client;
 use serde_json::Value;
@@ -19,12 +19,6 @@ use prettytable::{
     format::{FormatBuilder, LinePosition, LineSeparator},
     Cell, Row, Table,
 };
-
-#[derive(Args)]
-pub struct BrowseArgs {
-    #[arg(long, help = "Optional filter by device type (e.g. pro3em)")]
-    r#type: Option<String>,
-}
 
 #[derive(Debug, Clone)]
 struct ShellyDevice {

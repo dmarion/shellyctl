@@ -1,19 +1,8 @@
+use crate::cli::ConfigDumpArgs;
 use anyhow::{bail, Result};
-use clap::Args;
 use colored::*;
 use reqwest::Client;
 use serde_json::Value;
-
-#[derive(Args)]
-pub struct ConfigDumpArgs {
-    /// Device IP or hostname
-    #[arg(short, long)]
-    pub device: String,
-
-    /// Optional key path to print a subtree, e.g. .wifi.ap
-    #[arg(long)]
-    pub subtree: Option<String>,
-}
 
 pub async fn handle(args: ConfigDumpArgs) -> Result<()> {
     let url = format!("http://{}/rpc/Shelly.GetConfig", args.device);
