@@ -1,0 +1,13 @@
+[[devices]]
+name = "living_room"
+address = "192.168.123.83"
+db_path = "shelly_data.db"
+table = "living_room_readings"
+interval = 3
+
+[devices.fields]
+"wifi.rssi" = "wifi_rssi"
+"switch:0.voltage" = "sw0_voltage"
+"switch:0.temperature.tC" = "sw0_temp"
+"switch:1.voltage" = "sw1_voltage"
+"switch:1.temperature.tC" = "sw1_temp"
