@@ -22,15 +22,15 @@ use prettytable::{
 
 #[derive(Debug, Clone)]
 struct ShellyDevice {
-    mac: String,
     ip: String,
     gen: u32,
-    device_type: String,
     name: String,
     ver: String,
-    model: String,
     app: String,
     profile: String,
+    hostname: String,
+    ssid: String,
+    rssi: i32,
 }
 
 pub async fn handle(args: BrowseArgs) -> Result<()> {
@@ -87,8 +87,13 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                     continue;
                                 }
                             }
-                            let mac = json["mac"].as_str().unwrap_or("-").to_string();
                             let gen = json["gen"].as_u64().unwrap_or(0) as u32;
+                            let hostname = info
+                                .get_hostname()
+                                .strip_suffix(".local.")
+                                .unwrap_or_else(|| info.get_hostname())
+                                .to_string();
+
                             let get = |key: &str| {
                                 json.get(key)
                                     .and_then(|v| v.as_str())
@@ -96,22 +101,46 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                                     .to_string()
                             };
 
+                            let mut ssid = "-".to_string();
+                            let mut rssi = 0;
+
+                            let status_url = format!("http://{}/rpc/Shelly.GetStatus", ip_str);
+                            if let Ok(status_resp) = client
+                                .get(&status_url)
+                                .timeout(Duration::from_secs(2))
+                                .send()
+                                .await
+                            {
+                                if let Ok(status_json) = status_resp.json::<Value>().await {
+                                    ssid = status_json
+                                        .pointer("/wifi/ssid")
+                                        .and_then(|v| v.as_str())
+                                        .unwrap_or("-")
+                                        .to_string();
+
+                                    rssi = status_json
+                                        .pointer("/wifi/rssi")
+                                        .and_then(|v| v.as_i64())
+                                        .unwrap_or(0)
+                                        as i32;
+                                }
+                            }
+
                             devices.insert(
-                                mac.clone(),
+                                hostname.clone(),
                                 ShellyDevice {
-                                    mac,
+                                    hostname,
                                     gen,
                                     ip: ip_str,
-                                    device_type,
                                     name: get("name"),
                                     ver: get("ver"),
-                                    model: get("model"),
                                     app: get("app"),
                                     profile: get("profile"),
+                                    ssid,
+                                    rssi,
                                 },
                             );
 
-                            // Prepare table
                             let mut table = Table::new();
                             let format = FormatBuilder::new()
                                 .column_separator(' ')
@@ -133,10 +162,10 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
                             table.set_format(format);
 
                             table.add_row(Row::new(vec![
-                                Cell::new("MAC Addr").style_spec("Fc"),
+                                Cell::new("Hostname").style_spec("Fc"),
                                 Cell::new("IP Addr").style_spec("Fc"),
-                                Cell::new("Type").style_spec("Fc"),
-                                Cell::new("Model").style_spec("Fc"),
+                                Cell::new("SSID").style_spec("Fc"),
+                                Cell::new("RSSI").style_spec("Fc"),
                                 Cell::new("Gen").style_spec("Fc"),
                                 Cell::new("App").style_spec("Fc"),
                                 Cell::new("Profile").style_spec("Fc"),
@@ -146,20 +175,27 @@ pub async fn handle(args: BrowseArgs) -> Result<()> {
 
                             for device in devices.values() {
                                 table.add_row(Row::new(vec![
-                                    Cell::new(&device.mac).style_spec("Fg"),
+                                    Cell::new(&device.hostname).style_spec("Fg"),
                                     Cell::new(&device.ip).style_spec("Fw"),
-                                    Cell::new(&device.device_type).style_spec("Fy"),
-                                    Cell::new(&device.model).style_spec("Fw"),
-                                    Cell::new(&device.gen.to_string()).style_spec("Fy"),
-                                    Cell::new(&device.app).style_spec("Fw"),
-                                    Cell::new(&device.profile).style_spec("Fy"),
-                                    Cell::new(&device.ver).style_spec("Fw"),
-                                    Cell::new(&device.name).style_spec("Fy"),
+                                    Cell::new(&device.ssid).style_spec("Fw"),
+                                    match device.rssi {
+                                        rssi if rssi >= -60 => {
+                                            Cell::new(&device.rssi.to_string()).style_spec("Fg")
+                                        }
+                                        rssi if rssi >= -75 => {
+                                            Cell::new(&device.rssi.to_string()).style_spec("Fy")
+                                        }
+                                        _ => Cell::new(&device.rssi.to_string()).style_spec("Fr"),
+                                    },
+                                    Cell::new(&device.gen.to_string()).style_spec("Fw"),
+                                    Cell::new(&device.app).style_spec("Fy"),
+                                    Cell::new(&device.profile).style_spec("Fw"),
+                                    Cell::new(&device.ver).style_spec("Fy"),
+                                    Cell::new(&device.name).style_spec("Fw"),
                                 ]));
                             }
 
                             let height = table.to_string().lines().count();
-
                             if height > last_height {
                                 for _ in 0..(height - last_height) {
                                     println!();
