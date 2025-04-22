@@ -1,6 +1,6 @@
 use crate::cli::ConfigSetArgs;
-use crate::log_verbose;
 use anyhow::{bail, Result};
+use log::{error, info};
 use reqwest::Client;
 use serde_json::{json, to_string_pretty, Map, Value};
 
@@ -109,21 +109,16 @@ pub async fn handle(args: ConfigSetArgs) -> Result<()> {
                 .json()
                 .await?;
 
-            log_verbose(&format!(
-                "Current {} config:\n{}",
-                get_method,
-                to_string_pretty(&current_config)?
-            ));
+            match to_string_pretty(&current_config) {
+                Ok(pretty) => info!("Current config:\n{}", pretty),
+                Err(err) => error!("Failed to serialize config: {}", err),
+            }
         }
 
         let url = format!("http://{}/rpc/{}", args.device, set_method);
         let body = json!({ "config": config });
 
-        log_verbose(&format!(
-            "POST {}\nBODY:\n{}",
-            url,
-            to_string_pretty(&body)?
-        ));
+        info!("POST {}\nBODY:\n{}", url, to_string_pretty(&body)?);
 
         let resp = client.post(&url).json(&body).send().await?;
 

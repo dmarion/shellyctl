@@ -1,43 +1,38 @@
 mod browse;
 mod cli;
-mod configdump;
-mod configset;
-mod download;
-mod list;
-mod upload;
+mod config {
+    pub mod dump;
+    pub mod set;
+}
+mod script {
+    pub mod download;
+    pub mod list;
+    pub mod upload;
+}
 
 use clap::Parser;
 use cli::{Cli, Commands, ConfigCommand, ScriptCommand};
-use std::sync::atomic::{AtomicU8, Ordering};
-
-static VERBOSITY: AtomicU8 = AtomicU8::new(0);
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    VERBOSITY.store(cli.verbose, Ordering::Relaxed);
+    if cli.verbose > 0 {
+        env_logger::Builder::from_default_env()
+            .filter_level(log::LevelFilter::Debug) // or Info
+            .init();
+    }
 
     match cli.command {
         Commands::Script { command } => match command {
-            ScriptCommand::Upload(args) => {
-                upload::handle(args.device, args.slot, args.file).await?
-            }
-            ScriptCommand::Download(args) => {
-                download::handle(args.device, args.slot, args.file).await?
-            }
-            ScriptCommand::List(args) => list::handle(args.device).await?,
+            ScriptCommand::Upload(args) => script::upload::handle(args).await?,
+            ScriptCommand::Download(args) => script::download::handle(args).await?,
+            ScriptCommand::List(args) => script::list::handle(args).await?,
         },
         Commands::Config { command } => match command {
-            ConfigCommand::Set(args) => configset::handle(args).await?,
-            ConfigCommand::Dump(args) => configdump::handle(args).await?,
+            ConfigCommand::Set(args) => config::set::handle(args).await?,
+            ConfigCommand::Dump(args) => config::dump::handle(args).await?,
         },
         Commands::Browse(args) => browse::handle(args).await?,
     }
     Ok(())
-}
-
-pub fn log_verbose(message: &str) {
-    if VERBOSITY.load(Ordering::Relaxed) > 0 {
-        println!("[rpc] {}", message);
-    }
 }

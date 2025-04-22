@@ -54,17 +54,17 @@ pub struct DownloadScriptArgs {
     #[arg(short, long, help = "Device IP or hostname", alias = "d")]
     pub device: String,
 
-    #[arg(
-        short,
-        long,
-        default_value_t = 0,
-        help = "Script slot ID (default: 0)",
-        alias = "s"
-    )]
-    pub slot: u8,
+    #[arg(short, long, help = "Script name")]
+    pub name: String,
 
-    #[arg(help = "File to save downloaded script")]
-    pub file: String,
+    #[arg(short, long, help = "File to save downloaded script")]
+    pub file: Option<String>,
+
+    #[arg(long, help = "Print script code to stdout instead of saving")]
+    pub stdout: bool,
+
+    #[arg(short = 'y', long, help = "Overwrite file without confirmation")]
+    pub yes: bool,
 }
 
 #[derive(Args)]
@@ -72,17 +72,19 @@ pub struct UploadScriptArgs {
     #[arg(short, long, help = "Device IP or hostname", alias = "d")]
     pub device: String,
 
-    #[arg(
-        short,
-        long,
-        default_value_t = 0,
-        help = "Script slot ID (default: 0)",
-        alias = "s"
-    )]
-    pub slot: u8,
+    #[arg(short, long, help = "Script name", alias = "n")]
+    pub name: String,
 
-    #[arg(help = "Script file to upload")]
+    #[arg(short, long, help = "Script file to upload", alias = "f")]
     pub file: String,
+
+    /// Force overwrite the script even if one exists or is running
+    #[arg(long)]
+    pub force: bool,
+
+    /// Enable script after upload
+    #[arg(short, long)]
+    pub enable: bool,
 }
 
 #[derive(Args)]
