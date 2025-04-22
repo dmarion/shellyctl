@@ -7,19 +7,19 @@ repository = "https://github.com/dmarion/shellyctl"
 authors = ["dmarion"]
 
 [dependencies]
-clap = { version = "4.4", features = ["derive"] }
-tokio = { version = "1.35", features = ["full"] }
-reqwest = { version = "0.11", features = ["json"] }
+clap = { version = "4.5", features = ["derive"] }
+tokio = { version = "1.44", features = ["full"] }
+reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
-mdns-sd = "0.10"
+mdns-sd = "0.13"
 prettytable = "0.10"
-colored = "2"
-crossterm = "0.27"
+colored = "3"
+crossterm = "0.29"
 
 [build-dependencies]
-clap = { version = "4.4", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 clap_complete = "4"
 
 [package.metadata.deb]
