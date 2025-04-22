@@ -8,7 +8,7 @@ use clap_complete::{
     shells::{Bash, Zsh},
 };
 
-#[path = "src/cli.rs"]
+#[path = "src/bin/shellyctl/cli.rs"]
 mod cli;
 
 use cli::Cli;
